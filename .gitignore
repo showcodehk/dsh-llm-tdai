@@ -1,0 +1,9 @@
+node_modules/
+
+# 打包产物，可由 pnpm pack 重建。
+dist/
+*.tgz
+
+*.log
+.DS_Store
+Thumbs.db

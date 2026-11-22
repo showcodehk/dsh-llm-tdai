@@ -1,0 +1,45 @@
+{
+  "name": "dsh-llm-tdai",
+  "version": "1.0.0",
+  "description": "为 llm-pi-ai 通道补齐会话与压缩请求头，让上游记忆代理 TDAI MemoryProxy 能正确识别会话与辅助调用。",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "cordis.patch.yml",
+    "README.md",
+    "README_EN.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "engines": {
+    "node": ">=20.11"
+  },
+  "os": [
+    "win32",
+    "linux",
+    "darwin"
+  ],
+  "scripts": {
+    "check": "node --check index.js",
+    "test": "node --test",
+    "pack:dist": "pnpm pack --out dist/%s.tgz"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "dsh-bundle",
+    "memory",
+    "tdai"
+  ],
+  "license": "MIT"
+}

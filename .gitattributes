@@ -1,0 +1,12 @@
+# Store LF in the repository: the shell scripts are fetched from raw and piped
+# straight into a shell, so a stray CR would break them.
+* text=auto eol=lf
+
+# .cmd files are fetched from raw and executed as-is, never going through Git's
+# eol conversion. Keep them byte-exact so cmd.exe sees the CRLF it expects.
+*.cmd -text
+*.bat -text
+*.ps1 text eol=crlf
+
+*.tgz binary
+*.zip binary

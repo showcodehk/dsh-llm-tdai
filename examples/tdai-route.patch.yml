@@ -1,0 +1,62 @@
+# 配合 dsh-llm-tdai 的 provider 路由示例。
+#
+# 把这两段合并进 $DSH_HOME/profiles/<profile>/cordis.patch.yml 即可；
+# 其余条目（UI、权限、主题等）保持你自己的配置不动。
+#
+# 前提：dsh-llm-tdai 已安装并在同一轮生效。只改 provider 名不装插件，
+# 会话头就没人补了 —— llm-pi-ai 通道本身不发 x-deepseek-harness-session-id。
+#
+# baseURL / apiKeyEnv 按你自己的代理部署改：下面是本地 TDAI 的默认端口与路径。
+# 分层原则：路由级 compat 写「这个网关不支持什么」，模型级 compat 写
+# 「这个模型的协议细节」。路由的 compat 是该路由上每个模型的默认值，
+# 模型自身的 compat 逐字段覆盖。
+
+- id: llm-pi-ai
+  name: "@deepseek-ai/dsh-llm-pi-ai"
+  config:
+    providers:
+      tdai:
+        displayName: DeepSeek TDAI
+        api: openai-completions
+        apiKeyEnv: PROXY_USER_KEY
+        baseURL: http://127.0.0.1:8096/dsh/default
+        reasoning: max
+
+        # 网关级。llm-pi-ai 按 baseURL 猜出来的默认值这三项都不可用：
+        #   supportsDeveloperRole  猜 true 会发 role:"developer"，上游 422
+        #   maxTokensField         猜 max_completion_tokens，上游静默忽略
+        #   supportsStore          猜 true 会在请求体加 store:false
+        compat:
+          supportsDeveloperRole: false
+          maxTokensField: max_tokens
+          supportsStore: false
+
+        models:
+          - id: deepseek-flash
+            name: DeepSeek-V4.1-Flash
+            contextWindow: 1000000
+            maxTokens: 393216
+            input:
+              - text
+              - image
+
+            # 模型级：DeepSeek 的思考协议与 reasoning_content 回带约定。
+            compat:
+              thinkingFormat: deepseek
+              requiresReasoningContentOnAssistantMessages: true
+
+            # 手工声明的模型默认只认 "off"，必须显式列档位。
+            # 只列官方真实支持的 low / high / max。
+            # "off" 要加引号，否则 YAML 会解析成布尔 false；留空表示关闭思考。
+            reasoningEfforts:
+              "off":
+              low: low
+              high: high
+              max: max
+
+- id: agent-default-model
+  name: "@deepseek-ai/dsh-agent-default-model"
+  config:
+    provider: tdai
+    model: deepseek-flash
+    reasoningEffort: max

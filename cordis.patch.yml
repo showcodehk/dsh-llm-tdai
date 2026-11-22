@@ -1,0 +1,17 @@
+# 挂载 dsh-llm-tdai。
+#
+# dsh 的规则：新增插件必须写在 insert 下。顶层的 `- id:` 只能替换已存在的行，
+# 对不存在的 id 会静默跳过，所以这里不能用顶层的 id 形式。
+#
+# providers 列出需要补头的 provider 名，须与 profile 里 llm-pi-ai 的
+# config.providers 键一致。默认只处理 tdai，不会影响其它 provider。
+# 必须是数组；写成单个字符串不会报错，只会静默回落到默认值。
+#
+# 其余三项 sessionHeaders / compact / verbose 省略即取默认值（true / true / false）。
+# 不写是有意的：把默认值写死，插件以后调整默认时就锁不住了。语义见 README「配置」一节。
+- insert:
+    - id: llm-tdai
+      name: 'dsh-llm-tdai'
+      config:
+        providers:
+          - tdai
