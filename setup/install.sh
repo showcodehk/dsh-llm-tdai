@@ -56,10 +56,11 @@ fetch_to() {
   fi
 }
 
-# The CLI ships inside the desktop app; prefer whatever is already on PATH.
+# The CLI ships inside the desktop app. The current macOS bundle is
+# "DeepSeek Harness.app" (space included); the unspaced spellings remain as
+# fallbacks for older or renamed installs.
 find_dsh() {
   if [ -n "${DSH_BIN:-}" ]; then
-    [ -x "$DSH_BIN" ] || die "DSH_BIN is set but not executable: $DSH_BIN"
     printf '%s' "$DSH_BIN"
     return 0
   fi
@@ -68,6 +69,8 @@ find_dsh() {
     return 0
   fi
   for candidate in \
+    "/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh" \
+    "$HOME/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh" \
     "/Applications/DeepSeekHarness.app/Contents/Resources/runtime/cli/bin/dsh" \
     "$HOME/Applications/DeepSeekHarness.app/Contents/Resources/runtime/cli/bin/dsh" \
     "$HOME/.local/share/deepseek-harness/runtime/cli/bin/dsh" \
@@ -81,11 +84,21 @@ find_dsh() {
   return 1
 }
 
-DSH=$(find_dsh) || die "dsh CLI not found. Add it to PATH, or set DSH_BIN=/path/to/dsh."
+if [ -n "${DSH_BIN:-}" ] && [ ! -x "$DSH_BIN" ]; then
+  die "DSH_BIN is set but not executable: $DSH_BIN"
+fi
+
+if ! DSH=$(find_dsh); then
+  say "dsh CLI not found."
+  say "Set DSH_BIN to the dsh executable, or add dsh to PATH. On macOS the bundled CLI is:"
+  say "  /Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh"
+  exit 1
+fi
 
 # Quit the app first: `--profile` refuses to run while the desktop host is open.
-if pgrep -f "DeepSeekHarness" >/dev/null 2>&1; then
-  say "Quit DeepSeekHarness completely (including the tray icon), then run this again."
+# The macOS bundle and process are "DeepSeek Harness"; Windows uses no space.
+if pgrep -f "DeepSeek[ ]*Harness" >/dev/null 2>&1; then
+  say "Quit DeepSeek Harness completely (including the tray icon), then run this again."
   die "the desktop host is still running"
 fi
 
